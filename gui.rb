@@ -28,18 +28,9 @@ class GUIChess < Gosu::Window
   def draw
     @background.draw(0, 0, 0)
     @game.board.pieces.each do |piece|
-      @white_king.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == King
-      @white_queen.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == Queen
-      @white_bishop.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == Bishop
-      @white_knight.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == Knight
-      @white_rook.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == Rook
-      @white_pawn.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == Pawn
-      @black_king.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == King
-      @black_queen.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == Queen
-      @black_bishop.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == Bishop
-      @black_knight.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == Knight
-      @black_rook.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == Rook
-      @black_pawn.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == Pawn
+      ivar = ('@'+piece.color.to_s+'_'+piece.class.to_s.downcase).to_sym
+      x, y = coords_to_pixels(piece.pos)
+      self.instance_variable_get(ivar).draw(x, y, 1)
     end
   end
   
