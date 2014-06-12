@@ -24,7 +24,7 @@ class Board
                     Knight.new([6,7], :black, board)].
                     concat((0...8).map { |file| Pawn.new([file, 1], :white, board) }).
                     concat((0...8).map { |file| Pawn.new([file, 6], :black, board) })
-    board.refresh_caches
+    board.regenerate_caches
     board
   end
   
@@ -55,6 +55,61 @@ class Board
     on_board?(pos) && (self[pos].nil? || self[pos].color != color)
   end
 
+  def king(color)
+    color == :white ? @white_king : @black_king
+  end
+
+  def army(color)
+    color == :white ? @white_army : @black_army
+  end
+
+  def enemy_army(color)
+    color == :white ? @black_army : @white_army
+  end
+
+  def in_check?(color)
+    enemy_moves = enemy_army(color).reduce([]) do |moves, piece|
+      moves += piece.moves
+      moves
+    end
+    enemy_moves.include?(king(color).pos)
+  end
+
+  def any_moves?(color)
+    army(color).map { |piece| piece.valid_moves.count }.reduce(:+) != 0
+  end
+  
+  def checkmate?(color)
+    in_check?(color) && !any_moves?(color)    
+  end
+  
+  def stalemate?(color)
+    !in_check?(color) && !any_moves?(color)
+    # TODO: add check for threefold repetition
+  end
+
+  def move!(piece, end_pos)
+    captured_piece = self[end_pos] # could be nil, but
+    @pieces.delete(captured_piece) # Array#delete(nil) is ok
+    piece.pos = end_pos
+    piece.has_moved = true
+    regenerate_caches
+    self # allow chaining
+  end
+
+  def dup
+    board_dup = self.class.new
+    board_dup.pieces = pieces.map { |piece| piece.dup(board_dup) }
+    board_dup.regenerate_caches
+    board_dup
+  end
+  
+  def move_into_check?(start_pos, end_pos)
+    board_dup = self.dup # it's a shame to regenerate the caches both here...
+    piece_dup = board_dup[start_pos]
+    board_dup.move!(piece_dup, end_pos).in_check?(piece_dup.color) # ..and here
+  end
+
   def can_castle_kingside?(color)
     rank = (color == :white ? 0 : 7)
     (!in_check?(color) && !king(color).has_moved? &&
@@ -71,38 +126,6 @@ class Board
      !self[[0,rank]].nil? && !self[[0,rank]].has_moved? &&
      !move_into_check?([4,rank],[3,rank]) &&
      !move_into_check?([4,rank],[2,rank]))
-  end
-
-  def king(color)
-    color == :white ? @white_king : @black_king
-  end
-
-  def army(color)
-    color == :white ? @white_army : @black_army
-  end
-
-  def enemy_army(color)
-    color == :white ? @black_army : @white_army
-  end
-  
-  def in_check?(color)
-    enemy_moves = enemy_army(color).reduce([]) do |moves, piece|
-      moves += piece.moves
-      moves
-    end
-    enemy_moves.include?(king(color).pos)
-  end
-  
-  def any_moves?(color)
-    army(color).map { |piece| piece.valid_moves.count }.reduce(:+) != 0
-  end
-  
-  def checkmate?(color)
-    in_check?(color) && !any_moves?(color)    
-  end
-  
-  def stalemate?(color)
-    !in_check?(color) && !any_moves?(color)
   end
   
   def move(piece, end_pos)
@@ -126,50 +149,22 @@ class Board
   end
 
   def promote(piece, end_pos)
+    # prompt user to pick queen or knight here
+    # use a method that can be overriden in GUI mode
     @pieces.delete(piece)
     @pieces << Queen.new(end_pos, piece.color, self)
-    refresh_caches
+    regenerate_caches
   end
   
-  def move!(piece, end_pos)
-    captured_piece = self[end_pos] # could be nil
-    @pieces.delete(captured_piece)
-    piece.pos = end_pos
-    piece.has_moved = true
-    refresh_caches
-    self # allow chaining
-  end
-  
-  def move_into_check?(start_pos, end_pos)
-    board_dup = self.dup
-    piece_dup = board_dup[start_pos]
-    board_dup.move!(piece_dup, end_pos).in_check?(piece_dup.color)
-  end
-  
-  def dup
-    board_dup = self.class.new
-    board_dup.pieces = pieces.map { |piece| piece.dup(board_dup) }
-    board_dup.refresh_caches
-    board_dup
-  end
-  
-  def refresh_caches
-    generate_handles
-    generate_positions_hash
-  end
-  
-  def generate_handles
+  def regenerate_caches
     @white_army = @pieces.select { |piece| piece.color == :white }
     @black_army = @pieces.select { |piece| piece.color == :black }
     @white_king = @pieces.find { |piece| piece.color == :white && piece.class == King }
     @black_king = @pieces.find { |piece| piece.color == :black && piece.class == King }
-  end
-
-  def generate_positions_hash
     @positions_hash = @pieces.reduce({}) do |hash, piece|
       hash[piece.pos] = piece
       hash
     end
-  end  
+  end
   
 end
