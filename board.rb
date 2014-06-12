@@ -58,10 +58,6 @@ class Board
     end
     output
   end
-  
-  def opponent_pieces(color)
-    opponent_pieces = (color == :white ? @black_army : @white_army)
-  end
 
   def can_castle_kingside?(color)
     rank = (color == :white ? 0 : 7)
@@ -79,23 +75,29 @@ class Board
      !move_into_check?([4,rank],[3,rank]) &&
      !move_into_check?([4,rank],[2,rank]))
   end
+
+  def king(color)
+    color == :white ? @white_king : @black_king
+  end
+
+  def army(color)
+    color == :white ? @white_army : @black_army
+  end
+
+  def enemy_army(color)
+    color == :white ? @black_army : @white_army
+  end
   
   def in_check?(color)
-    king_pos = (color == :white ? @white_king.pos : @black_king.pos)
-    opponent_moves = opponent_pieces(color).reduce([]) do |moves, piece|
+    enemy_moves = enemy_army(color).reduce([]) do |moves, piece|
       moves += piece.moves
       moves
     end
-    opponent_moves.include?(king_pos)
+    enemy_moves.include?(king(color).pos)
   end
   
   def any_moves?(color)
-    if color == :white
-      pieces = @white_army
-    else
-      pieces = @black_army
-    end
-    pieces.map { |piece| piece.valid_moves.count }.reduce(:+) != 0
+    army(color).map { |piece| piece.valid_moves.count }.reduce(:+) != 0
   end
   
   def checkmate?(color)
@@ -108,22 +110,18 @@ class Board
   
   def move(piece, end_pos)
     fail 'invalid move' unless piece.moves.include?(end_pos)
-    #castle kingside
     if piece.class == King && end_pos[0] == 6 && can_castle_kingside?(piece.color)
       rank = end_pos[1]
       move!(piece, end_pos)             # move king
       move!(self[[7, rank]], [5, rank]) # move rook
-    #castle kingside
     elsif piece.class == King && end_pos[0] == 2 && can_castle_queenside?(piece.color)
       rank = end_pos[1]
       move!(piece, end_pos)             # move king
       move!(self[[0, rank]], [3, rank]) # move rook
     else
-      #promotion
       if piece.class == Pawn && (piece.color == :white && end_pos[1] == 7 ||
                                  piece.color == :black && end_pos[1] == 0)
         promote(piece, end_pos)
-      #regular move
       else
         move!(piece, end_pos)
       end
