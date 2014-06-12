@@ -41,6 +41,3 @@ class Pawn < Piece
   end
   
 end
-# 
-# board#valid_move?(pos, color)
-# board#capturable?(pos, color)
