@@ -33,28 +33,24 @@ class Board
   def [](pos)
     @positions_hash[pos]
   end
+
+  def on_board?(pos)
+    pos.all? { |coord| coord.between?(0,7) }
+  end
   
   def valid_move?(pos, color)
     on_board?(pos) && (self[pos].nil? || self[pos].color != color)
   end
   
-  def on_board?(pos)
-    pos.all? { |coord| coord.between?(0,7) }
-  end
-  
   def to_s
-    output_array = Array.new(8) { Array.new(8) {' '} }
-    (@white_army + @black_army).each do |piece|
-      unless piece.pos.nil?
-        x = piece.pos[0]
-        y = piece.pos[1]
-        output_array[y][x] = piece.to_s
-      end
-    end
-    
     output = "\n  a b c d e f g h\n"
     7.downto(0) do |rank|
-      output += "#{rank + 1} #{output_array[rank].join' '}\n"
+      output += "#{rank + 1} "
+      0.upto(7) do |file|
+        piece = self[[file, rank]]
+        output += "#{(piece.nil? ? ' ' : piece.to_s)} "
+      end
+      output += "\n"
     end
     output
   end
