@@ -69,6 +69,10 @@ class Board
     color == :white ? @black_army : @white_army
   end
 
+  def no_moves?(color) 
+    army(color).map { |piece| piece.valid_moves.count }.reduce(:+) == 0
+  end  
+
   public
   def in_check?(color)
     enemy_moves = enemy_army(color).reduce([]) do |moves, piece|
@@ -77,13 +81,6 @@ class Board
     enemy_moves.include?(king(color).pos)
   end
 
-  private
-  # helper function to Board#checkmate and Board#stalemate
-  def no_moves?(color) 
-    army(color).map { |piece| piece.valid_moves.count }.reduce(:+) == 0
-  end
-  
-  public
   def checkmate?(color)
     in_check?(color) && no_moves?(color)    
   end
