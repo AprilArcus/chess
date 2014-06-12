@@ -107,17 +107,19 @@ class Board
   end
   
   def move(piece, end_pos)
+    fail 'invalid move' unless piece.moves.include?(end_pos)
     #castle kingside
     if piece.class == King && end_pos[0] == 6 && can_castle_kingside?(piece.color)
-      move!(piece, end_pos) # move king
-      move!(self[[7, end_pos[1]]], [5, end_pos[1]]) # move rook
+      rank = end_pos[1]
+      move!(piece, end_pos)             # move king
+      move!(self[[7, rank]], [5, rank]) # move rook
     #castle kingside
     elsif piece.class == King && end_pos[0] == 2 && can_castle_queenside?(piece.color)
-      move!(piece, end_pos) # move king
-      move!(self[[0, end_pos[1]]], [3, end_pos[1]]) # move rook
+      rank = end_pos[1]
+      move!(piece, end_pos)             # move king
+      move!(self[[0, rank]], [3, rank]) # move rook
     else
       # regular move
-      fail 'invalid move' unless piece.moves.include?(end_pos)
       if piece.class == Pawn && (piece.color == :white && end_pos[1] == 7 ||
                                  piece.color == :black && end_pos[1] == 0)
         #promotion
