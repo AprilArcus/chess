@@ -146,8 +146,7 @@ class Board
       move!(piece, end_pos)             # move king
       move!(self[[0, rank]], [3, rank]) # move rook
     else
-      if piece.class == Pawn && (piece.color == :white && end_pos[1] == 7 ||
-                                 piece.color == :black && end_pos[1] == 0)
+      if piece.class == Pawn && [0, 7].include?(end_pos[1])
         promote(piece, end_pos)
       else
         move!(piece, end_pos)
