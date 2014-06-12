@@ -145,12 +145,11 @@ class Board
       rank = end_pos[1]
       move!(piece, end_pos)             # move king
       move!(self[[0, rank]], [3, rank]) # move rook
+    elsif piece.class == Pawn && [0, 7].include?(end_pos[1])
+      move!(piece, end_pos)
+      promote(piece, end_pos)
     else
-      if piece.class == Pawn && [0, 7].include?(end_pos[1])
-        promote(piece, end_pos)
-      else
-        move!(piece, end_pos)
-      end
+      move!(piece, end_pos)
     end
   end
 
