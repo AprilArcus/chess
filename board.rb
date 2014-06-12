@@ -79,17 +79,17 @@ class Board
 
   private
   # helper function to Board#checkmate and Board#stalemate
-  def any_moves?(color) 
-    army(color).map { |piece| piece.valid_moves.count }.reduce(:+) != 0
+  def no_moves?(color) 
+    army(color).map { |piece| piece.valid_moves.count }.reduce(:+) == 0
   end
   
   public
   def checkmate?(color)
-    in_check?(color) && !any_moves?(color)    
+    in_check?(color) && no_moves?(color)    
   end
   
   def stalemate?(color)
-    !in_check?(color) && !any_moves?(color)
+    !in_check?(color) && no_moves?(color)
     # TODO: add check for threefold repetition
   end
 
@@ -133,6 +133,13 @@ class Board
      !move_into_check?([4,rank],[3,rank]) &&
      !move_into_check?([4,rank],[2,rank]))
   end
+
+  def promote(piece, end_pos)
+    # prompt user to pick queen or knight here. use a callback!
+    @pieces.delete(piece)
+    @pieces << Queen.new(end_pos, piece.color, self)
+    regenerate_caches
+  end
   
   public
   def move(piece, end_pos)
@@ -150,16 +157,6 @@ class Board
     end
   end
 
-  private
-  def promote(piece, end_pos)
-    # prompt user to pick queen or knight here
-    # use a method that can be overriden in GUI mode
-    @pieces.delete(piece)
-    @pieces << Queen.new(end_pos, piece.color, self)
-    regenerate_caches
-  end
-  
-  public
   def regenerate_caches
     @white_army = @pieces.select { |piece| piece.color == :white }
     @black_army = @pieces.select { |piece| piece.color == :black }
