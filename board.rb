@@ -119,23 +119,21 @@ class Board
       move!(piece, end_pos)             # move king
       move!(self[[0, rank]], [3, rank]) # move rook
     else
-      # regular move
+      #promotion
       if piece.class == Pawn && (piece.color == :white && end_pos[1] == 7 ||
                                  piece.color == :black && end_pos[1] == 0)
-        #promotion
-        if piece.color == :white
-          @pieces.delete(piece)
-          @pieces << Queen.new(end_pos, :white, self)
-          generate_caches
-        else
-          @pieces.delete(piece)
-          @pieces << Queen.new(end_pos, :black, self)
-          generate_caches
-        end
-      else #regular move
+        promote(piece, end_pos)
+      #regular move
+      else
         move!(piece, end_pos)
       end
     end
+  end
+
+  def promote(piece, end_pos)
+    @pieces.delete(piece)
+    @pieces << Queen.new(end_pos, piece.color, self)
+    generate_caches
   end
   
   def move!(piece, end_pos)
