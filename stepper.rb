@@ -7,7 +7,7 @@ class Stepper < Piece
   def moves 
     @vectors.map do |vector|
       vector_add(@pos, vector)
-    end.select { |pos| @board.valid_move?(pos, @color) }
+    end.select { |pos| @board.empty_or_capture?(pos, @color) }
   end
 end
 

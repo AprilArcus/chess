@@ -54,18 +54,18 @@ class GUIChess < Gosu::Window
   end
   
   def button_down(id)
-    @start_pos = get_mouse_grid # use an ivar to persist state until button_up
+    @start_pos = get_coords # use an ivar to persist state until button_up
   end
   
   def button_up(id)
-    end_pos = get_mouse_grid
+    end_pos = get_coords
     begin
       @game.GUIplay(@start_pos, end_pos)
     rescue GameError
     end
   end
   
-  def get_mouse_grid
+  def get_coords
     pixels_to_coords([mouse_x, mouse_y])
   end
   

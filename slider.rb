@@ -4,18 +4,14 @@ require_relative 'piece'
 class Slider < Piece
 
   def moves
-    moves = []
-    @vectors.each do |vector|
-      moves += slide(vector)
-    end
-    moves
+    @vectors.reduce([]) { |moves, vector| moves += slide(vector) }
   end
   
   
   def slide(vector)
     moves = []
-    pos = vector_add(@pos, vector)
-    while @board.valid_move?(pos, @color)
+    pos = vector_add(@pos, vector) # step once in the direction of vector
+    while @board.empty_or_capture?(pos, @color)
       moves << pos
       break unless @board[pos].nil?
       pos = vector_add(pos, vector)

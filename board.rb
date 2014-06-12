@@ -51,7 +51,7 @@ class Board
     pos.all? { |coord| coord.between?(0,7) }
   end
   
-  def valid_move?(pos, color)
+  def empty_or_capture?(pos, color)
     on_board?(pos) && (self[pos].nil? || self[pos].color != color)
   end
 
@@ -70,7 +70,6 @@ class Board
   def in_check?(color)
     enemy_moves = enemy_army(color).reduce([]) do |moves, piece|
       moves += piece.moves
-      moves
     end
     enemy_moves.include?(king(color).pos)
   end
