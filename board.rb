@@ -78,7 +78,8 @@ class Board
   end
 
   private
-  def any_moves?(color)
+  # helper function to Board#checkmate and Board#stalemate
+  def any_moves?(color) 
     army(color).map { |piece| piece.valid_moves.count }.reduce(:+) != 0
   end
   
