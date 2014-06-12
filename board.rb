@@ -4,6 +4,7 @@ require_relative 'pawn'
 
 class Board
   
+  public
   def self.setup
     board = Board.new
     board.pieces = [Rook.new(  [0,0], :white, board),
@@ -55,6 +56,7 @@ class Board
     on_board?(pos) && (self[pos].nil? || self[pos].color != color)
   end
 
+  private
   def king(color)
     color == :white ? @white_king : @black_king
   end
@@ -67,6 +69,7 @@ class Board
     color == :white ? @black_army : @white_army
   end
 
+  public
   def in_check?(color)
     enemy_moves = enemy_army(color).reduce([]) do |moves, piece|
       moves += piece.moves
@@ -74,10 +77,12 @@ class Board
     enemy_moves.include?(king(color).pos)
   end
 
+  private
   def any_moves?(color)
     army(color).map { |piece| piece.valid_moves.count }.reduce(:+) != 0
   end
   
+  public
   def checkmate?(color)
     in_check?(color) && !any_moves?(color)    
   end
@@ -109,6 +114,7 @@ class Board
     board_dup.move!(piece_dup, end_pos).in_check?(piece_dup.color) # ..and here
   end
 
+  private
   def can_castle_kingside?(color)
     rank = (color == :white ? 0 : 7)
     (!in_check?(color) && !king(color).has_moved? &&
@@ -127,6 +133,7 @@ class Board
      !move_into_check?([4,rank],[2,rank]))
   end
   
+  public
   def move(piece, end_pos)
     fail 'invalid move' unless piece.moves.include?(end_pos)
     if piece.class == King && end_pos[0] == 6 && can_castle_kingside?(piece.color)
@@ -147,6 +154,7 @@ class Board
     end
   end
 
+  private
   def promote(piece, end_pos)
     # prompt user to pick queen or knight here
     # use a method that can be overriden in GUI mode
@@ -155,6 +163,7 @@ class Board
     regenerate_caches
   end
   
+  public
   def regenerate_caches
     @white_army = @pieces.select { |piece| piece.color == :white }
     @black_army = @pieces.select { |piece| piece.color == :black }
