@@ -47,9 +47,9 @@ class Chess
   end
   
   def validate_moving_piece(piece)
-    raise GameError.new ("That piece can't move :/") if piece.valid_moves.empty?
-    raise GameError.new ("No piece there!") if piece.nil? 
-    raise GameError.new ("Move your own piece!") unless piece.color == @current_player
+    raise GameError.new("No piece there!") if piece.nil? 
+    raise GameError.new("That piece can't move :/") if piece.valid_moves.empty?
+    raise GameError.new("Move your own piece!") unless piece.color == @current_player
   end
   
   def get_destination(piece)

@@ -7,8 +7,8 @@ require_relative "chess"
 
 class GUIChess < Gosu::Window
   
-  def initialize(width, height, fullscreen)
-    super
+  def initialize
+    super(640, 640, true)
     @game = Chess.new
     @background =   Gosu::Image.new(self, './assets/background.png',   false)
     @white_king =   Gosu::Image.new(self, './assets/white_king.png',   false)
@@ -24,6 +24,16 @@ class GUIChess < Gosu::Window
     @black_rook =   Gosu::Image.new(self, './assets/black_rook.png',   false)
     @black_pawn =   Gosu::Image.new(self, './assets/black_pawn.png',   false)
   end
+
+  def coords_to_pixels(pos)
+    x, y = pos
+    [x * 80, 640-((y+1) * 80)]
+  end
+  
+  def pixels_to_coords(pixel)
+    x, y = pixel
+    [(x/80).to_i, ((640-y)/80).to_i]
+  end
     
   def draw
     @background.draw(0, 0, 0)
@@ -37,16 +47,6 @@ class GUIChess < Gosu::Window
   
   def needs_cursor?
     true
-  end
-  
-  def coords_to_pixels(pos)
-    x, y = pos
-    [x * 80, 640-((y+1) * 80)]
-  end
-  
-  def pixels_to_coords(pixel)
-    x, y = pixel
-    [(x/80).to_i, ((640-y)/80).to_i]
   end
   
   def update
@@ -66,19 +66,16 @@ class GUIChess < Gosu::Window
   end
   
   def get_mouse_grid
-    mouse = [mouse_x, mouse_y]
-    pos = pixels_to_coords(mouse)
+    pixels_to_coords([mouse_x, mouse_y])
   end
   
 end
-
 
 class Chess
   def GUIplay(start_pos, end_pos)
     piece = @board[start_pos]
  
-    raise GameError.new("No piece there") if piece.nil?
-    validate_moving_piece(piece) # raise an exception if we pick the wrong piece
+    validate_moving_piece(piece)
     validate_destination(piece, end_pos)
     
     @board.move(piece, end_pos)
@@ -86,9 +83,6 @@ class Chess
   end
 end
 
-
-
 if __FILE__ == $PROGRAM_NAME
-  GUIChessInstance = GUIChess.new(640, 640, false)
-  GUIChessInstance.show
+  GUIChess.new.show
 end
