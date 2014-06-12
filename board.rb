@@ -24,7 +24,7 @@ class Board
                     Knight.new([6,7], :black, board)].
                     concat((0...8).map { |file| Pawn.new([file, 1], :white, board) }).
                     concat((0...8).map { |file| Pawn.new([file, 6], :black, board) })
-    board.generate_caches
+    board.refresh_caches
     board
   end
   
@@ -34,14 +34,6 @@ class Board
     @positions_hash[pos]
   end
 
-  def on_board?(pos)
-    pos.all? { |coord| coord.between?(0,7) }
-  end
-  
-  def valid_move?(pos, color)
-    on_board?(pos) && (self[pos].nil? || self[pos].color != color)
-  end
-  
   def to_s
     output = "\n  a b c d e f g h\n"
     7.downto(0) do |rank|
@@ -55,17 +47,26 @@ class Board
     output
   end
 
+  def on_board?(pos)
+    pos.all? { |coord| coord.between?(0,7) }
+  end
+  
+  def valid_move?(pos, color)
+    on_board?(pos) && (self[pos].nil? || self[pos].color != color)
+  end
+
   def can_castle_kingside?(color)
     rank = (color == :white ? 0 : 7)
-    (!in_check?(color) && !self[[4,rank]].nil? && !self[[4,rank]].has_moved? &&
-     self[[5,rank]].nil? && self[[6,rank]].nil? && !self[[7,rank]].nil? &&
-     !self[[7,rank]].has_moved? && !move_into_check?([4,rank],[5,rank]) &&
-     !move_into_check?([4,rank],[6,rank]))
+    (!in_check?(color) && !king(color).has_moved? &&
+     self[[5,rank]].nil? && self[[6,rank]].nil? && # intervening squares empty
+     !self[[7,rank]].nil? && !self[[7,rank]].has_moved? && # rook hasn't moved
+     !move_into_check?([4,rank],[5,rank]) && # don't move through check
+     !move_into_check?([4,rank],[6,rank]))   # don't move into check
   end
   
   def can_castle_queenside?(color)
     rank = (color == :white ? 0 : 7)
-    (!in_check?(color) && !self[[4,rank]].nil? && !self[[4,rank]].has_moved? &&
+    (!in_check?(color) && !king(color).has_moved? &&
      self[[3,rank]].nil? && self[[2,rank]].nil? && self[[1,rank]].nil? &&
      !self[[0,rank]].nil? && !self[[0,rank]].has_moved? &&
      !move_into_check?([4,rank],[3,rank]) &&
@@ -127,7 +128,7 @@ class Board
   def promote(piece, end_pos)
     @pieces.delete(piece)
     @pieces << Queen.new(end_pos, piece.color, self)
-    generate_caches
+    refresh_caches
   end
   
   def move!(piece, end_pos)
@@ -135,7 +136,7 @@ class Board
     @pieces.delete(captured_piece)
     piece.pos = end_pos
     piece.has_moved = true
-    generate_caches
+    refresh_caches
     self # allow chaining
   end
   
@@ -148,11 +149,11 @@ class Board
   def dup
     board_dup = self.class.new
     board_dup.pieces = pieces.map { |piece| piece.dup(board_dup) }
-    board_dup.generate_caches
+    board_dup.refresh_caches
     board_dup
   end
   
-  def generate_caches
+  def refresh_caches
     generate_handles
     generate_positions_hash
   end
