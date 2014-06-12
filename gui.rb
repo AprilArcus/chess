@@ -41,7 +41,7 @@ class GUIChess < Gosu::Window
   
   def coords_to_pixels(pos)
     x, y = pos
-    [x * 80, 560+(-y * 80)]
+    [x * 80, 640-((y+1) * 80)]
   end
   
   def pixels_to_coords(pixel)
