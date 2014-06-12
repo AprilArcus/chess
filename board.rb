@@ -6,40 +6,29 @@ class Board
   
   def self.setup
     board = Board.new
-    board.white_king =    King.new(  [4,0], :white, board)
-    board.white_queens =  [Queen.new( [3,0], :white, board)]
-    board.white_rooks =   [Rook.new(  [0,0], :white, board),
-                           Rook.new(  [7,0], :white, board)]
-    board.white_bishops = [Bishop.new([2,0], :white, board),
-                           Bishop.new([5,0], :white, board)]
-    board.white_knights = [Knight.new([1,0], :white, board),
-                           Knight.new([6,0], :white, board)]
-    board.white_pawns = (0...8).map { |file| Pawn.new([file, 1], :white, board) }
-    board.black_king =    King.new(  [4,7], :black, board)
-    board.black_queens =  [Queen.new( [3,7], :black, board)]
-    board.black_rooks =   [Rook.new(  [0,7], :black, board),
-                           Rook.new(  [7,7], :black, board)]
-    board.black_bishops = [Bishop.new([2,7], :black, board),
-                           Bishop.new([5,7], :black, board)]
-    board.black_knights = [Knight.new([1,7], :black, board),
-                           Knight.new([6,7], :black, board)]
-    board.black_pawns = (0...8).map { |file| Pawn.new([file, 6], :black, board) }
+    board.pieces = [Rook.new(  [0,0], :white, board),
+                    Knight.new([1,0], :white, board),
+                    Bishop.new([2,0], :white, board),
+                    Queen.new( [3,0], :white, board),
+                    King.new(  [4,0], :white, board),
+                    Bishop.new([5,0], :white, board),
+                    Knight.new([6,0], :white, board),
+                    Rook.new(  [7,0], :white, board),
+                    Rook.new(  [0,7], :black, board),
+                    Knight.new([1,7], :black, board),
+                    Bishop.new([2,7], :black, board),
+                    Bishop.new([5,7], :black, board),
+                    Queen.new( [3,7], :black, board),
+                    King.new(  [4,7], :black, board),
+                    Rook.new(  [7,7], :black, board),
+                    Knight.new([6,7], :black, board)].
+                    concat((0...8).map { |file| Pawn.new([file, 1], :white, board) }).
+                    concat((0...8).map { |file| Pawn.new([file, 6], :black, board) })
     board.update_game_state
     board
   end
   
-  attr_accessor :white_king,
-                :white_queens,
-                :white_rooks,
-                :white_bishops,
-                :white_knights,
-                :white_pawns,
-                :black_king,
-                :black_queens,
-                :black_rooks,
-                :black_bishops,
-                :black_knights,
-                :black_pawns
+  attr_accessor :pieces
   
   def [](pos)
     @positions_hash[pos]
@@ -133,12 +122,12 @@ class Board
                                  piece.color == :black && end_pos[1] == 0)
         #promotion
         if piece.color == :white
-          @white_pawns.delete(piece)
-          @white_queens << Queen.new(end_pos, :white, self)
+          @pieces.delete(piece)
+          @pieces << Queen.new(end_pos, :white, self)
           update_game_state
         else
-          @black_pawns.delete(piece)
-          @black_queens << Queen.new(end_pos, :black, self)
+          @pieces.delete(piece)
+          @pieces << Queen.new(end_pos, :black, self)
           update_game_state
         end
       else #regular move
@@ -149,16 +138,7 @@ class Board
   
   def move!(piece, end_pos)
     captured_piece = self[end_pos] # could be nil
-    @black_queens.delete(captured_piece)
-    @black_bishops.delete(captured_piece)
-    @black_knights.delete(captured_piece)
-    @black_rooks.delete(captured_piece)
-    @black_pawns.delete(captured_piece)
-    @white_queens.delete(captured_piece)
-    @white_bishops.delete(captured_piece)
-    @white_knights.delete(captured_piece)
-    @white_rooks.delete(captured_piece)
-    @white_pawns.delete(captured_piece)
+    @pieces.delete(captured_piece)
     piece.pos = end_pos
     piece.has_moved = true # useful for pawns & castling;
     update_game_state      # but implemented by all pieces
@@ -173,40 +153,26 @@ class Board
   
   def dup
     duped_board = self.class.new
-    duped_board.white_king = @white_king.dup(duped_board)
-    duped_board.white_queens = @white_queens.map { |piece| piece.dup(duped_board) }
-    duped_board.white_bishops = @white_bishops.map { |piece| piece.dup(duped_board) }
-    duped_board.white_knights = @white_knights.map { |piece| piece.dup(duped_board) }
-    duped_board.white_rooks = @white_rooks.map { |piece| piece.dup(duped_board) }
-    duped_board.white_pawns = @white_pawns.map { |piece| piece.dup(duped_board) }
-    duped_board.black_king = @black_king.dup(duped_board)
-    duped_board.black_queens = @black_queens.map { |piece| piece.dup(duped_board) }
-    duped_board.black_bishops = @black_bishops.map { |piece| piece.dup(duped_board) }
-    duped_board.black_knights = @black_knights.map { |piece| piece.dup(duped_board) }
-    duped_board.black_rooks = @black_rooks.map { |piece| piece.dup(duped_board) }
-    duped_board.black_pawns = @black_pawns.map { |piece| piece.dup(duped_board) }
+    duped_board.pieces = pieces.map { |piece| piece.dup(duped_board) }
     duped_board.update_game_state
     duped_board
   end
   
   def update_game_state
-    gather_armies
+    generate_handles
     generate_positions_hash
   end
   
-  def gather_armies
-    @white_army = [@white_king].concat(@white_queens).concat(@white_rooks).
-                                concat(@white_bishops).concat(@white_knights).
-                                concat(@white_pawns)
-    @black_army = [@black_king].concat(@black_queens).concat(@black_rooks).
-                                concat(@black_bishops).concat(@black_knights).
-                                concat(@black_pawns)
+  def generate_handles
+    @white_army = @pieces.select { |piece| piece.color == :white }
+    @black_army = @pieces.select { |piece| piece.color == :black }
+    @white_king = @pieces.find { |piece| piece.color == :white && piece.class == King }
+    @black_king = @pieces.find { |piece| piece.color == :black && piece.class == King }
   end
 
   def generate_positions_hash
     @positions_hash = {}
-    @white_army.each { |piece| @positions_hash[piece.pos] = piece }
-    @black_army.each { |piece| @positions_hash[piece.pos] = piece }
+    @pieces.each { |piece| @positions_hash[piece.pos] = piece }
   end  
   
 end

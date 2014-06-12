@@ -27,18 +27,20 @@ class GUIChess < Gosu::Window
     
   def draw
     @background.draw(0, 0, 0)
-    @white_king.draw(*coords_to_pixels(@game.board.white_king.pos), 1)
-    @game.board.white_queens.each { |queen| @white_queen.draw(*coords_to_pixels(queen.pos), 1) }
-    @game.board.white_bishops.each { |bishop| @white_bishop.draw(*coords_to_pixels(bishop.pos), 1) }
-    @game.board.white_knights.each { |knight| @white_knight.draw(*coords_to_pixels(knight.pos), 1) }
-    @game.board.white_rooks.each { |rook| @white_rook.draw(*coords_to_pixels(rook.pos), 1) }
-    @game.board.white_pawns.each { |pawn| @white_pawn.draw(*coords_to_pixels(pawn.pos), 1) }
-    @black_king.draw(*coords_to_pixels(@game.board.black_king.pos), 1)
-    @game.board.black_queens.each { |queen| @black_queen.draw(*coords_to_pixels(queen.pos), 1) }
-    @game.board.black_bishops.each { |bishop| @black_bishop.draw(*coords_to_pixels(bishop.pos), 1) }
-    @game.board.black_knights.each { |knight| @black_knight.draw(*coords_to_pixels(knight.pos), 1) }
-    @game.board.black_rooks.each { |rook| @black_rook.draw(*coords_to_pixels(rook.pos), 1) }
-    @game.board.black_pawns.each { |pawn| @black_pawn.draw(*coords_to_pixels(pawn.pos), 1) }
+    @game.board.pieces.each do |piece|
+      @white_king.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == King
+      @white_queen.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == Queen
+      @white_bishop.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == Bishop
+      @white_knight.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == Knight
+      @white_rook.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == Rook
+      @white_pawn.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :white && piece.class == Pawn
+      @black_king.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == King
+      @black_queen.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == Queen
+      @black_bishop.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == Bishop
+      @black_knight.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == Knight
+      @black_rook.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == Rook
+      @black_pawn.draw(*coords_to_pixels(piece.pos), 1) if piece.color == :black && piece.class == Pawn
+    end
   end
   
   def needs_cursor?
