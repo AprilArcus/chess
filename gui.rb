@@ -29,8 +29,9 @@ class GUIChess < Gosu::Window
     @background.draw(0, 0, 0)
     @game.board.pieces.each do |piece|
       sym = ('@'+piece.color.to_s+'_'+piece.class.to_s.downcase).to_sym
+      image = self.instance_variable_get(sym)
       x, y = coords_to_pixels(piece.pos)
-      self.instance_variable_get(sym).draw(x, y, 1)
+      image.draw(x, y, 1)
     end
   end
   
