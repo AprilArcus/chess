@@ -8,7 +8,7 @@ require_relative "chess"
 class GUIChess < Gosu::Window
   
   def initialize
-    super(640, 640, true)
+    super(640, 640, false)
     @game = Chess.new
     @background =   Gosu::Image.new(self, './assets/background.png',   false)
     @white_king =   Gosu::Image.new(self, './assets/white_king.png',   false)
