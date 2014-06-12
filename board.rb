@@ -24,7 +24,7 @@ class Board
                     Knight.new([6,7], :black, board)].
                     concat((0...8).map { |file| Pawn.new([file, 1], :white, board) }).
                     concat((0...8).map { |file| Pawn.new([file, 6], :black, board) })
-    board.update_game_state
+    board.generate_caches
     board
   end
   
@@ -124,11 +124,11 @@ class Board
         if piece.color == :white
           @pieces.delete(piece)
           @pieces << Queen.new(end_pos, :white, self)
-          update_game_state
+          generate_caches
         else
           @pieces.delete(piece)
           @pieces << Queen.new(end_pos, :black, self)
-          update_game_state
+          generate_caches
         end
       else #regular move
         move!(piece, end_pos)
@@ -140,25 +140,25 @@ class Board
     captured_piece = self[end_pos] # could be nil
     @pieces.delete(captured_piece)
     piece.pos = end_pos
-    piece.has_moved = true # useful for pawns & castling;
-    update_game_state      # but implemented by all pieces
+    piece.has_moved = true
+    generate_caches
     self # allow chaining
   end
   
   def move_into_check?(start_pos, end_pos)
     board_dup = self.dup
-    dup_piece = board_dup[start_pos]
-    board_dup.move!(dup_piece, end_pos).in_check?(dup_piece.color)
+    piece_dup = board_dup[start_pos]
+    board_dup.move!(piece_dup, end_pos).in_check?(piece_dup.color)
   end
   
   def dup
-    duped_board = self.class.new
-    duped_board.pieces = pieces.map { |piece| piece.dup(duped_board) }
-    duped_board.update_game_state
-    duped_board
+    board_dup = self.class.new
+    board_dup.pieces = pieces.map { |piece| piece.dup(board_dup) }
+    board_dup.generate_caches
+    board_dup
   end
   
-  def update_game_state
+  def generate_caches
     generate_handles
     generate_positions_hash
   end
@@ -171,8 +171,10 @@ class Board
   end
 
   def generate_positions_hash
-    @positions_hash = {}
-    @pieces.each { |piece| @positions_hash[piece.pos] = piece }
+    @positions_hash = @pieces.reduce({}) do |hash, piece|
+      hash[piece.pos] = piece
+      hash
+    end
   end  
   
 end
